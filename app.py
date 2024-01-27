@@ -13,6 +13,7 @@ def main():
     api_key = os.environ[st.secrets['mistral']['key']]
     model = "mistral-tiny"
 
+<<<<<<< HEAD
     # Load the Google Sheet into a dataframe.
     conn = st.connection("gsheets", type=GSheetsConnection)
     df_cars = conn.read(worksheet="Sheet1", ttl="10m", usecols=[0,1,2,3,4])
@@ -35,6 +36,8 @@ def main():
     # conn.update(worksheet="Sheet1", data=combined_df)
 
 
+=======
+>>>>>>> 3d66216 (fixed secrets)
     # Header
     st.image("autohalle-titelbild.png")
     st.title("Text-Generierung mittels KI")
@@ -64,6 +67,7 @@ def main():
         message = (f"Beschreibe das Auto {car_name} aus dem Jahr {car_year} in einem kurzen Fließtext auf Deutsch."
                    f"Der Text sollte positiv klingen und die Vorteile des Autos hervorheben."
                    f"Erwähne nicht das Baujahr.")
+<<<<<<< HEAD
         car_descr = get_response(message, False, api_key, model)
         # st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
         # Create a Series representing a new row
@@ -72,6 +76,10 @@ def main():
         new_car = pd.Series([date, time, car_name, car_year, car_descr], index=st.session_state.df_cars.columns)
         # Concatenate the DataFrame and the Series to add the new row
         st.session_state.df_cars = pd.concat([st.session_state.df_cars, new_car.to_frame().transpose()], ignore_index=True)
+=======
+        car_descr = get_response(message, True, api_key, model)
+        st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
+>>>>>>> 3d66216 (fixed secrets)
 
     
     # Display the text history
