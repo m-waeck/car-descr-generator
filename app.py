@@ -58,15 +58,22 @@ def main():
     st.header("Beschreibungstext generieren")
     car_name = st.text_input("Autobezeichnung:", "Fiat Multipla")
     car_year = st.text_input("Baujahr:", "2001")
+<<<<<<< HEAD
     # # Initialize a list to store the text history
     # if 'car_history' not in st.session_state:
     #     st.session_state.car_history = []
+=======
+    # Initialize a list to store the text history
+    if 'car_history' not in st.session_state:
+        st.session_state.car_history = []
+>>>>>>> d231608 (descr functionality)
     # Display a button
     if st.button("Generieren"):
         # Action to perform when the button is clicked
         message = (f"Beschreibe das Auto {car_name} aus dem Jahr {car_year} in einem kurzen Fließtext auf Deutsch."
                    f"Der Text sollte positiv klingen und die Vorteile des Autos hervorheben."
                    f"Erwähne nicht das Baujahr.")
+<<<<<<< HEAD
 <<<<<<< HEAD
         car_descr = get_response(message, False, api_key, model)
         # st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
@@ -80,6 +87,17 @@ def main():
         car_descr = get_response(message, True, api_key, model)
         st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
 >>>>>>> 3d66216 (fixed secrets)
+=======
+        car_descr = get_response(message, True)
+        st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
+
+    # Display the text history
+    if st.session_state.car_history:
+        st.header("Generierte Beschreibungen")
+        for car in st.session_state.car_history:
+            st.subheader(car[0] + ", Baujahr: " + car[1])
+            st.write(car[2])
+>>>>>>> d231608 (descr functionality)
 
     
     # Display the text history
