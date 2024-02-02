@@ -1,43 +1,73 @@
 # app.py
-import os
 import streamlit as st
+from pymongo import MongoClient
 from datetime import datetime
-from streamlit_gsheets import GSheetsConnection
 from mistral_api import get_response
-import pandas as pd
+
+
+DB = "autohalle"
+COLL = "cars"
+CONN_STR = st.secrets["mongodb"]["mongoURI"]
+API_KEY = st.secrets['mistral']['key']
+AI_MODEL = "mistral-small"
+
+
+
+# Function to connect to MongoDB Atlas
+def connect_to_mongodb():
+    # Replace <connection_string> with your actual connection string
+    try:
+        client = MongoClient(CONN_STR)
+        # st.success("Connected to MongoDB Atlas successfully.")
+        return client
+    except Exception as e:
+        st.error(f"Error connecting to MongoDB Atlas: {e}")
+        return None
+
+# Function to fetch items from MongoDB
+def fetch_items():
+    client = connect_to_mongodb()
+
+    if client:
+        # Replace <dbname> and <collection_name> with your actual database and collection names
+        db = client[DB]
+        collection = db[COLL]
+
+        # Fetch items from MongoDB
+        items = list(collection.find())
+
+        return items
+
+# Function to create message for AI
+def create_message(car_model, car_year, car_specials):
+    message = (f"Beschreibe das Auto {car_model} aus dem Jahr {car_year} in einem kurzen Fließtext auf Deutsch."
+               f"Der Text soll maximal 8 Sätze enthalten."
+               f"Der Text soll positiv klingen und die Vorteile des Autos hervorheben."
+               f"Erwähne nicht das Baujahr.")
+    if car_specials:
+        message += f"Beachte folgende Besonderheiten und gehe darauf ein: {car_specials}"
+    return message
+
+# Function to add a new document to MongoDB
+def add_new_document(doc):
+    client = connect_to_mongodb()
+
+    if client:
+        # Replace <dbname> and <collection_name> with your actual database and collection names
+        db = client[DB]
+        collection = db[COLL]
+
+        # Add a new document
+        collection.insert_one(doc)
 
 def main():
 
-    # variables
-    os.environ[st.secrets['mistral']['key']] = st.secrets['mistral']['key']
-    api_key = os.environ[st.secrets['mistral']['key']]
-    model = "mistral-tiny"
+    # Sidebar
+    sidebar = st.sidebar
+    sidebar.header("Projekt von Marvin Wäcker")
+    st.sidebar.markdown("[GitHub](https://github.com/m-waeck)")
+    st.sidebar.markdown("[LinkedIn](https://www.linkedin.com/in/marvin-waecker/)")
 
-<<<<<<< HEAD
-    # Load the Google Sheet into a dataframe.
-    conn = st.connection("gsheets", type=GSheetsConnection)
-    df_cars = conn.read(worksheet="Sheet1", ttl="10m", usecols=[0,1,2,3,4])
-    df_cars = df_cars.dropna(axis='index', how='all')
-    if 'df_cars' not in st.session_state:
-        st.session_state.df_cars = df_cars
-    # print(st.session_state.df_cars.shape)
-
-    # Print results.
-    # for row in df.itertuples():
-    #     # st.write(row)
-    #     st.write(f"{row.datum} um {row.uhrzeit} Uhr:  {row.bezeichnung}, {row.baujahr}")
-    #     st.write(row.beschreibung)
-    
-
-    # dict_to_save = dict(datum=["01-01-2024", "02-01-2024"], uhrzeit=["14:00:00", "15:00:00"], bezeichnung=["Audi TT", "VW Tuareg"], baujahr=["2001", "2002"], beschreibung=["Das Auto ist sehr gut.", "Das Auto ist sehr schlecht."])
-    # df_to_save = pd.DataFrame(dict_to_save)
-    # print(df_to_save)
-    # combined_df = pd.concat([df, df_to_save])
-    # conn.update(worksheet="Sheet1", data=combined_df)
-
-
-=======
->>>>>>> 3d66216 (fixed secrets)
     # Header
     st.image("autohalle-titelbild.png")
     st.title("Text-Generierung mittels KI")
@@ -45,87 +75,44 @@ def main():
               f"und in wenigen Sätzen ein bestimmtes Auto beschreiben."))
     st.markdown("<br>", unsafe_allow_html=True)
 
-
-    # Sidebar
-    sidebar = st.sidebar
-    sidebar.header("Projekt von Marvin Wäcker")
-    # Adding GitHub link to the sidebar
-    st.sidebar.markdown("[GitHub](https://github.com/m-waeck)")
-    st.sidebar.markdown("[LinkedIn](https://www.linkedin.com/in/marvin-waecker/)")
-    
-
     # Text input for user to enter text
     st.header("Beschreibungstext generieren")
-    car_name = st.text_input("Autobezeichnung:", "Fiat Multipla")
+    car_model = st.text_input("Modelbezeichnung:", "Fiat Multipla")
     car_year = st.text_input("Baujahr:", "2001")
-<<<<<<< HEAD
-    # # Initialize a list to store the text history
-    # if 'car_history' not in st.session_state:
-    #     st.session_state.car_history = []
-=======
-    # Initialize a list to store the text history
-    if 'car_history' not in st.session_state:
-        st.session_state.car_history = []
->>>>>>> d231608 (descr functionality)
-    # Display a button
-    if st.button("Generieren"):
-        # Action to perform when the button is clicked
-        message = (f"Beschreibe das Auto {car_name} aus dem Jahr {car_year} in einem kurzen Fließtext auf Deutsch."
-                   f"Der Text sollte positiv klingen und die Vorteile des Autos hervorheben."
-                   f"Erwähne nicht das Baujahr.")
-<<<<<<< HEAD
-<<<<<<< HEAD
-        car_descr = get_response(message, False, api_key, model)
-        # st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
-        # Create a Series representing a new row
-        date = datetime.now().strftime('%d-%m-%Y')
-        time = datetime.now().strftime('%H:%M:%S')
-        new_car = pd.Series([date, time, car_name, car_year, car_descr], index=st.session_state.df_cars.columns)
-        # Concatenate the DataFrame and the Series to add the new row
-        st.session_state.df_cars = pd.concat([st.session_state.df_cars, new_car.to_frame().transpose()], ignore_index=True)
-=======
-        car_descr = get_response(message, True, api_key, model)
-        st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
->>>>>>> 3d66216 (fixed secrets)
-=======
-        car_descr = get_response(message, True)
-        st.session_state.car_history.insert(0, [car_name, car_year, car_descr])
+    car_specials = st.text_input("Besonderheiten:", "Keine")
 
-    # Display the text history
-    if st.session_state.car_history:
+    # Display button to add a new document
+    gen_button = st.button("Generieren")
+
+    # Add a new document when the button is pressed
+    if gen_button:
+        car_date = datetime.now().strftime('%d-%m-%Y')
+        car_time = datetime.now().strftime('%H:%M:%S')
+        car_descr = get_response(create_message(car_model, car_year, car_specials), False, API_KEY, AI_MODEL)
+        # Document to be added to the collection
+        if car_specials == "Keine": car_specials = None
+        new_document = {"date":car_date,
+                        "time":car_time,
+                        "model":car_model,
+                        "year":int(car_year),
+                        "specials":car_specials,
+                        "descr":car_descr}
+        add_new_document(new_document)
+
+    # Fetch and display items
+    items = fetch_items()
+    if items:
         st.header("Generierte Beschreibungen")
-        for car in st.session_state.car_history:
-            st.subheader(car[0] + ", Baujahr: " + car[1])
-            st.write(car[2])
->>>>>>> d231608 (descr functionality)
-
-    
-    # Display the text history
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.header("Generierte Beschreibungen")
-    # df_cars_rev = st.session_state.df_cars.iloc[::-1]
-    for _, car in (st.session_state.df_cars.iloc[::-1]).iloc[:5].iterrows():
-        sh = f"{car['bezeichnung']}, Baujahr: {remove_decimal(car['baujahr'])}"
-        st.subheader(sh)
-        st.write(f"{car['datum']} | {car['uhrzeit']} Uhr")
-        st.write(car["beschreibung"])
-        if not st.session_state.df_cars.empty:
-            conn.update(worksheet="Sheet1", data=st.session_state.df_cars)
-
-
-def remove_decimal(value):
-    # Convert to string
-    str_value = str(value)
-
-    # Remove decimal part
-    if '.' in str_value:
-        str_value = str_value.split('.')[0]
-
-    # Convert back to the original type (either str or float)
-    return str_value
+        for i, car in enumerate(reversed(items)):
+            if i > 9: break
+            sh = f"{car['model']}, Baujahr: {car['year']}"
+            st.subheader(sh)
+            st.write(f"{car['date']} | {car['time']} Uhr")
+            st.write(car["descr"])
+            if car["specials"]:
+                st.write(f"Besonderheiten: {car['specials']}")
+    else:
+        st.warning("No items found in the MongoDB collection.")
 
 if __name__ == "__main__":
     main()
-
-
-
