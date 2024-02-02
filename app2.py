@@ -1,4 +1,4 @@
-import os
+# app2.py
 import streamlit as st
 from datetime import datetime
 from mistral_api import get_response
