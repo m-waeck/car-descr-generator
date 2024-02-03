@@ -1,19 +1,21 @@
 from datetime import datetime
-from mistralai.client import MistralClient
-from mistralai.models.chat_completion import ChatMessage
+from openai import OpenAI
 
-def get_response(message, save_chat, api_key, model):
 
-    client = MistralClient(api_key=api_key)
+def get_response(message, save_chat, api_key, model="gpt-3.5-turbo"):
+
+    client = OpenAI(
+        api_key=api_key,
+    )
 
     messages = [
-        ChatMessage(role="user", content=message)
+        {"role":"user", "content":message}
     ]
 
-    # No streaming
-    chat_response = client.chat(
+    chat_response = client.chat.completions.create(
         model=model,
         messages=messages,
+        max_tokens=2000,
     )
 
     if save_chat:
