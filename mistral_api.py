@@ -22,4 +22,3 @@ def get_response(message, save_chat, api_key, model):
             f.write(chat)
 
     return chat_response.choices[0].message.content
-
