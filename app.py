@@ -2,6 +2,7 @@
 import streamlit as st
 from pymongo import MongoClient
 from datetime import datetime
+import textwrap as tw
 
 
 DB = "autohalle"
@@ -122,12 +123,29 @@ def main():
         st.header("Generierte Beschreibungen")
         for i, car in enumerate(reversed(items)):
             if i > 9: break
-            sh = f"{car['model']}, Baujahr: {car['year']}"
-            st.subheader(sh)
+            ad_title = f"{car['model']}, Baujahr: {car['year']}"
+            st.subheader(ad_title)
+            # # Create two columns
+            # col1, col2 = st.columns([4, 1])  # Adjust the width ratio as needed
+            # with col1:
+            #     st.subheader(ad_title)
+            # with col2:
+            #     if st.button("Text kopieren", key=str(i)):
+            #         st.write("Button clicked!")
+
             st.write(f"{car['date']} | {car['time']} Uhr")
             st.write(car["descr"])
+            # st.code( #car["descr"], language="python")
+            #     "\n".join(
+            #         tw.wrap(
+            #             car['descr'],
+            #             width=80,
+            #         )
+            #     ), language="c"
+            # )
             if car["specials"]:
                 st.write(f"Besonderheiten: {car['specials']}")
+
     else:
         st.warning("No items found in the MongoDB collection.")
 
