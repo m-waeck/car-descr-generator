@@ -8,7 +8,7 @@ import textwrap as tw
 DB = "autohalle"
 COLL = "cars"
 CONN_STR = st.secrets["mongodb"]["mongoURI"]
-DEFAULT_AI_MODEL = 0 # 0 = GPT, 1 = Mistral
+DEFAULT_AI_MODEL = 0 # 0 = GPT, 1 = Mistral, 2 = DeepSeek
 
 
 # Function to connect to MongoDB Atlas
@@ -66,7 +66,9 @@ def main():
     sidebar.header("Projekt von Marvin Wäcker")
     st.sidebar.markdown("[GitHub](https://github.com/m-waeck)")
     st.sidebar.markdown("[LinkedIn](https://www.linkedin.com/in/marvin-waecker/)")
-    selected_button = st.sidebar.radio("Select Model", ("GPT", "Mistral"), index=DEFAULT_AI_MODEL)
+    selected_button = st.sidebar.radio("Sprachmodell auswählen", 
+                                       ("ChatGPT", "Mistral", "DeepSeek (Funktioniert noch nicht)"), 
+                                       index=DEFAULT_AI_MODEL)
 
     # Display content based on selected button
     if selected_button == "GPT":
@@ -74,11 +76,16 @@ def main():
         from openai_api import get_response
         API_KEY = st.secrets['openai']['key']
         AI_MODEL = "gpt-3.5-turbo"
-    else:
+    elif selected_button == "Mistral":
         # st.sidebar.write("Mistral is activated")
         from mistral_api import get_response
         API_KEY = st.secrets['mistral']['key']
         AI_MODEL = "mistral-large-latest" # "mistral-small"
+    else:
+        # st.sidebar.write("DeepSeek is activated")
+        from deepseek_api import get_response
+        API_KEY = st.secrets['deepseek']['key']
+        AI_MODEL = "deepseek-chat" # find model
 
 
     # Header
