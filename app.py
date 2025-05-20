@@ -67,7 +67,7 @@ def main():
     st.sidebar.markdown("[GitHub](https://github.com/m-waeck)")
     st.sidebar.markdown("[LinkedIn](https://www.linkedin.com/in/marvin-waecker/)")
     selected_button = st.sidebar.radio("Sprachmodell auswählen", 
-                                       ("ChatGPT", "Mistral", "DeepSeek (Funktioniert noch nicht)"), 
+                                       ("ChatGPT", "Mistral", "DeepSeek"), 
                                        index=DEFAULT_AI_MODEL)
 
     # Display content based on selected button
@@ -81,11 +81,14 @@ def main():
         API_KEY = st.secrets['mistral']['key']
         AI_MODEL = "mistral-large-latest"
         print("Mistral selected.")
-    else:
+    elif selected_button == "DeepSeek":
         from deepseek_api import get_response
         API_KEY = st.secrets['deepseek']['key']
         AI_MODEL = "deepseek-chat"
         print("DeepSeek selected.")
+    else:
+        st.error("Model nicht verfügbar. Bitte wähle ein anderes Model.")
+        return
 
 
 
