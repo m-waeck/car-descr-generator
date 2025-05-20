@@ -8,7 +8,7 @@ import textwrap as tw
 DB = "autohalle"
 COLL = "cars"
 CONN_STR = st.secrets["mongodb"]["mongoURI"]
-DEFAULT_AI_MODEL = 0 # 0 = GPT, 1 = Mistral, 2 = DeepSeek
+DEFAULT_AI_MODEL = 0 # 0 = ChatGPT, 1 = Mistral, 2 = DeepSeek
 
 
 # Function to connect to MongoDB Atlas
@@ -71,7 +71,7 @@ def main():
                                        index=DEFAULT_AI_MODEL)
 
     # Display content based on selected button
-    if selected_button == "GPT":
+    if selected_button == "ChatGPT":
         # st.sidebar.write("GPT is activated")
         from openai_api import get_response
         API_KEY = st.secrets['openai']['key']
