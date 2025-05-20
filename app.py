@@ -72,20 +72,21 @@ def main():
 
     # Display content based on selected button
     if selected_button == "ChatGPT":
-        # st.sidebar.write("GPT is activated")
         from openai_api import get_response
         API_KEY = st.secrets['openai']['key']
         AI_MODEL = "gpt-3.5-turbo"
+        print("ChatGPT selected.")
     elif selected_button == "Mistral":
-        # st.sidebar.write("Mistral is activated")
         from mistral_api import get_response
         API_KEY = st.secrets['mistral']['key']
-        AI_MODEL = "mistral-large-latest" # "mistral-small"
+        AI_MODEL = "mistral-large-latest"
+        print("Mistral selected.")
     else:
-        # st.sidebar.write("DeepSeek is activated")
         from deepseek_api import get_response
         API_KEY = st.secrets['deepseek']['key']
-        AI_MODEL = "deepseek-chat" # find model
+        AI_MODEL = "deepseek-chat"
+        print("DeepSeek selected.")
+
 
 
     # Header
@@ -104,15 +105,18 @@ def main():
     # Display button to add a new document
     gen_button = st.button("Generieren")
 
+
     # Add a new document when the button is pressed
     if gen_button:
         car_date = datetime.now().strftime('%d-%m-%Y')
         car_time = datetime.now().strftime('%H:%M:%S')
-        # print(API_KEY, AI_MODEL)
         WORD_COUNT = 12345
+        print(f"Generating description using model {AI_MODEL} for {car_model} ({car_year})...")
         while WORD_COUNT > 160:
             car_descr = get_response(create_message(car_model, car_year, car_specials), False, API_KEY, AI_MODEL)
             WORD_COUNT = len(car_descr.split())
+        print(f"Text generated with {WORD_COUNT} words.")
+
         # Document to be added to the collection
         if car_specials == "Keine": car_specials = None
         new_document = {"date":car_date,
@@ -124,6 +128,7 @@ def main():
                         "ai_model":AI_MODEL}
         add_new_document(new_document)
 
+
     # Fetch and display items
     items = fetch_items()
     if items:
@@ -132,29 +137,14 @@ def main():
             if i > 9: break
             ad_title = f"{car['model']}, Baujahr: {car['year']}"
             st.subheader(ad_title)
-            # # Create two columns
-            # col1, col2 = st.columns([4, 1])  # Adjust the width ratio as needed
-            # with col1:
-            #     st.subheader(ad_title)
-            # with col2:
-            #     if st.button("Text kopieren", key=str(i)):
-            #         st.write("Button clicked!")
-
             st.write(f"{car['date']} | {car['time']} Uhr")
             st.write(car["descr"])
-            # st.code( #car["descr"], language="python")
-            #     "\n".join(
-            #         tw.wrap(
-            #             car['descr'],
-            #             width=80,
-            #         )
-            #     ), language="c"
-            # )
             if car["specials"]:
                 st.write(f"Besonderheiten: {car['specials']}")
 
     else:
         st.warning("No items found in the MongoDB collection.")
+        print("No items found in the MongoDB collection.")
 
 if __name__ == "__main__":
     main()
