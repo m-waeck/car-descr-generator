@@ -3,6 +3,8 @@ from pymongo import MongoClient
 from datetime import datetime
 from bson.objectid import ObjectId
 
+# TODO: Put this into a useful class
+
 # Constants
 DB = "autohalle"
 CARS_COLL = "cars"
@@ -16,6 +18,31 @@ def connect_to_mongodb(conn_str):
     except Exception as e:
         print(f"Error connecting to MongoDB Atlas: {e}")
         return None
+
+def fetch_items(conn_str, db, collection_name):
+    """Fetch items from a MongoDB collection."""
+    client = connect_to_mongodb(conn_str)
+
+    if client:
+        db = client[db]
+        collection = db[collection_name]
+
+        items = list(collection.find())
+        return items
+
+    return []
+
+# Function to add a new document to MongoDB
+def add_new_document(conn_str, db, collection_name, doc):
+    client = connect_to_mongodb(conn_str)
+
+    if client:
+        # Replace <dbname> and <collection_name> with your actual database and collection names
+        db = client[db]
+        collection = db[collection_name]
+
+        # Add a new document
+        collection.insert_one(doc)
 
 def save_features(conn_str, car_id, raw_text, categorized_features, all_features, ai_model):
     """

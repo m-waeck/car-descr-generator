@@ -2,13 +2,13 @@
 import streamlit as st
 from pymongo import MongoClient
 from datetime import datetime
-import textwrap as tw
-import json
-from bson.objectid import ObjectId
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Import our new modules
 from feature_extraction import extract_features, verify_features
-from db_operations import connect_to_mongodb, save_features, get_features_by_car_id
+from db_operations import fetch_items, add_new_document
 from openai_api import get_json_response
 
 
@@ -20,32 +20,6 @@ CONN_STR = st.secrets["mongodb"]["mongoURI"]
 DEFAULT_AI_MODEL = 0 # 0 = ChatGPT, 1 = Mistral, 2 = DeepSeek
 OPENAI_MODEL_EXTRACTION = "gpt-4o"  # Model for feature extraction
 
-
-# Function to connect to MongoDB Atlas
-def connect_to_mongodb():
-    # Replace <connection_string> with your actual connection string
-    try:
-        client = MongoClient(CONN_STR)
-        # st.success("Connected to MongoDB Atlas successfully.")
-        return client
-    except Exception as e:
-        st.error(f"Error connecting to MongoDB Atlas: {e}")
-        return None
-
-# Function to fetch items from MongoDB
-def fetch_items(collection_name):
-    client = connect_to_mongodb()
-
-    if client:
-        # Replace <dbname> and <collection_name> with your actual database and collection names
-        db = client[DB]
-        collection = db[collection_name]
-
-        # Fetch items from MongoDB
-        items = list(collection.find())
-
-        return items
-
 # Function to create message for AI
 def create_message(car_model, car_year, car_specials):
     message = (f"Beschreibe das Auto {car_model} aus dem Jahr {car_year} in einem kurzen Fließtext auf Deutsch."
@@ -56,18 +30,6 @@ def create_message(car_model, car_year, car_specials):
     if car_specials:
         message += f"Beachte folgende Besonderheiten und gehe darauf ein: {car_specials}"
     return message
-
-# Function to add a new document to MongoDB
-def add_new_document(doc, collection_name):
-    client = connect_to_mongodb()
-
-    if client:
-        # Replace <dbname> and <collection_name> with your actual database and collection names
-        db = client[DB]
-        collection = db[collection_name]
-
-        # Add a new document
-        collection.insert_one(doc)
 
 def main():
     # Sidebar
@@ -104,7 +66,7 @@ def main():
     st.image("autohalle-titelbild.png")
 
     # Add tabs for different functionalities
-    tab1, tab2 = st.tabs(["Textgenerator", "Merkmalsextraktor"])
+    tab1, tab2, tab3 = st.tabs(["Textgenerator", "Merkmalsextraktor", "Analyse"])
     
     with tab1:
         # Text generation tab
@@ -148,10 +110,10 @@ def main():
                             "specials":car_specials_textgen,
                             "descr":car_descr,
                             "ai_model":AI_MODEL}
-            add_new_document(new_document, COLL_TEXT)
+            add_new_document(CONN_STR, DB, COLL_TEXT, new_document)
 
         # Fetch and display items
-        items_cars = fetch_items(COLL_TEXT)
+        items_cars = fetch_items(CONN_STR, DB, COLL_TEXT)
         if items_cars:
             st.header("Generierte Beschreibungen")
             for i, car in enumerate(reversed(items_cars)):
@@ -212,10 +174,10 @@ def main():
                                 "all_features":features["all_features"],
                                 "raw_text":feature_text,
                                 "ai_model":AI_MODEL}
-                add_new_document(new_document, COLL_FEAT)
+                add_new_document(CONN_STR, DB, COLL_FEAT, new_document)
 
         # Fetch and display items
-        items_feats = fetch_items(COLL_FEAT)
+        items_feats = fetch_items(CONN_STR, DB, COLL_FEAT)
         if items_feats:
             st.header("Extrahierte Fahrzeugmerkmale")
             for i, feats in enumerate(reversed(items_feats)):
@@ -245,6 +207,80 @@ def main():
         else:
             st.warning("No items found in the MongoDB collection.")
             print("No items found in the MongoDB collection.")
+
+
+
+###############################################################################################
+
+
+    with tab3:
+        # Analysis tab
+        st.title("Analyse der generierten Daten")
+        st.write("Hier werden die bisher generierten Fahrzeugdaten aus der Datenbank analysiert und visualisiert.")
+
+        # Fetch items from MongoDB
+        items_cars = fetch_items(CONN_STR, DB, COLL_TEXT)
+        
+        if items_cars:
+            df_cars = pd.DataFrame(items_cars)
+            df_cars['date'] = pd.to_datetime(df_cars['date'], format='%d-%m-%Y')
+            df_cars['time'] = pd.to_datetime(df_cars['time'], format='%H:%M:%S').dt.time
+            
+            # Display DataFrame
+            st.subheader("Verteilung Baujahr")
+
+            # Plot distribution of year
+            plt.figure(figsize=(12, 6))
+            # bars should have this color: #d52c24
+            sns.countplot(data=df_cars, x='year', color='#d52c24')
+            plt.xlabel('Baujahr', fontsize=14)
+            plt.ylabel('Anzahl Fahrzeuge', fontsize=14)
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            st.pyplot(plt)
+
+            # Texte pro Monat
+            st.subheader("Fahrzeuganzahl nach Monaten")
+
+            # Plot histogram of date binned by month (col: 'date' - datetime)
+            # Group by month
+            df_monthly = df_cars.groupby(df_cars['date'].dt.to_period('M')).size()
+
+            # Convert PeriodIndex to datetime for plotting
+            df_monthly.index = df_monthly.index.to_timestamp()
+
+            # Plot
+            plt.figure(figsize=(12,6))
+            sns.lineplot(x=df_monthly.index, y=df_monthly.values, marker='o', color='#d52c24')
+            plt.xlabel("Monat", fontsize=14)
+            plt.ylabel("Anzahl Fahrzeuge", fontsize=14)
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            plt.grid(True)
+            st.pyplot(plt)
+
+            # Texte pro Stunde
+            st.subheader("Fahrzeuganzahl nach Stunden")
+
+            # Extract hour
+            df_cars['hour'] = pd.to_datetime(df_cars['time'], format='%H:%M:%S').dt.hour
+
+            # Count samples per hour
+            df_hourly = df_cars.groupby('hour').size()
+
+            # Plot as bar chart
+            plt.figure(figsize=(12,6))
+            sns.barplot(x=df_hourly.index, y=df_hourly.values, color='#d52c24')
+            plt.xlabel("Stunde des Tages", fontsize=14)
+            plt.ylabel("Anzahl Fahrzeuge", fontsize=14)
+            plt.xticks(fontsize=11)
+            plt.yticks(fontsize=11)
+            st.pyplot(plt)
+
+        else:
+            st.warning("No items found in the MongoDB collection.")
+            print("No items found in the MongoDB collection.")
+
 
 
 if __name__ == "__main__":
