@@ -68,8 +68,10 @@ def main():
     # Add tabs for different functionalities
     tab1, tab2, tab3 = st.tabs(["Textgenerator", "Merkmalsextraktor", "Analyse"])
     
+    ###############################################################################################
+    # Text generation tab
+
     with tab1:
-        # Text generation tab
         st.title("Text-Generierung mittels KI")
         st.write((f"Mit diesem Tool lassen sich Texte generieren, die von einer KI geschrieben wurden "
                 f"und in wenigen Sätzen ein bestimmtes Auto beschreiben."))
@@ -131,11 +133,10 @@ def main():
     
 
 
-###############################################################################################
-
+    ###############################################################################################
+    # Feature extraction tab
 
     with tab2:
-        # Feature extraction tab
         st.title("Merkmal-Extraktion mittels KI")
         st.write(f"Mit diesem Tool lassen sich Fahrzeugmerkmale mithilfe von KI aus einem unformatierten Text extrahieren "
                  f"und alphabetisch kategorisieren.")
@@ -190,7 +191,6 @@ def main():
                     if features_list:
                         category_name = {
                             "motor_getriebe_fahrwerk_lenkung": "Motor & Getriebe & Fahrwerk & Lenkung",
-                            "ausstattung": "Ausstattung",
                             "pakete": "Pakete",
                             "sicherheit": "Sicherheit",
                             "audio_kommunikation": "Audio & Kommunikation",
@@ -210,11 +210,10 @@ def main():
 
 
 
-###############################################################################################
-
+    ###############################################################################################
+    # Analysis tab
 
     with tab3:
-        # Analysis tab
         st.title("Analyse der generierten Daten")
         st.write("Hier werden die bisher generierten Fahrzeugdaten aus der Datenbank analysiert und visualisiert.")
 
@@ -239,7 +238,7 @@ def main():
             plt.yticks(fontsize=11)
             st.pyplot(plt)
 
-            # Texte pro Monat
+            # Fahrzeuganzahl nach Monaten
             st.subheader("Fahrzeuganzahl nach Monaten")
 
             # Plot histogram of date binned by month (col: 'date' - datetime)
@@ -259,7 +258,7 @@ def main():
             plt.grid(True)
             st.pyplot(plt)
 
-            # Texte pro Stunde
+            # Fahrzeuganzahl nach Stunden
             st.subheader("Fahrzeuganzahl nach Stunden")
 
             # Extract hour

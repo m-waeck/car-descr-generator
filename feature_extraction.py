@@ -19,9 +19,8 @@ def extract_features(text, get_response_func, api_key, model):
     prompt = """
     Du bist ein hilfreiches System zur Extraktion von Fahrzeugmerkmalen.
     Extrahiere und kategorisiere alle Fahrzeugmerkmale aus dem folgenden Text. 
-    Kategorisiere jedes Merkmal in eine der folgenden Kategorien: 
+    Kategorisiere jedes Merkmal in eine der folgenden 7 Kategorien: 
     - Motor & Getriebe & Fahrwerk & Lenkung (z.B. Motor, Sportfahrwerk, etc.)
-    - Ausstattung (Sitze, Klimaanlage, etc.)
     - Pakete (z.B. Sportpaket, Komfortpaket, etc.)
     - Sicherheit (z.B. Airbags, Assistenzsysteme, etc.)
     - Audio & Kommunikation (z.B. Audio, Navigation, etc.)
@@ -33,7 +32,6 @@ def extract_features(text, get_response_func, api_key, model):
     Gib die Ausgabe **ausschließlich als gültiges JSON-Objekt** mit folgender Struktur zurück:
     {
         "motor_getriebe_fahrwerk_lenkung": ["merkmal1", "merkmal2", ...],
-        "ausstattung": ["merkmal1", "merkmal2", ...],
         "pakete": ["merkmal1", "merkmal2", ...],
         "sicherheit": ["merkmal1", "merkmal2", ...],
         "audio_kommunikation": ["merkmal1", "merkmal2", ...],
@@ -48,7 +46,6 @@ def extract_features(text, get_response_func, api_key, model):
     Text:
     """
 
-    
     # Get response from LLM
     response = get_response_func(prompt + text, False, api_key, model)
     
@@ -57,7 +54,7 @@ def extract_features(text, get_response_func, api_key, model):
         categorized_features = json.loads(response)
         
         # Ensure all categories exist
-        for category in ["motor_getriebe_fahrwerk_lenkung", "ausstattung", "pakete", "sicherheit", 
+        for category in ["motor_getriebe_fahrwerk_lenkung", "pakete", "sicherheit", 
                          "audio_kommunikation", "komfort", "interieur", "exterieur", "weiteres"]:
             if category not in categorized_features:
                 categorized_features[category] = []
@@ -80,7 +77,6 @@ def extract_features(text, get_response_func, api_key, model):
         return {
             "categorized_features": {
                 "motor_getriebe_fahrwerk_lenkung": [],
-                "ausstattung": [],
                 "pakete": [],
                 "sicherheit": [],
                 "audio_kommunikation": [],

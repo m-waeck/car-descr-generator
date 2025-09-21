@@ -162,9 +162,11 @@ cython_debug/
 # Files
 secrets.toml
 .streamlit/secrets.toml
+__pycache__
 
 # macOS
 .DS_Store
 
 # vscode
 .vscode/
+
