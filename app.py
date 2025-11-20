@@ -229,14 +229,17 @@ def main():
             st.subheader("Verteilung Baujahr")
 
             # Plot distribution of year
-            plt.figure(figsize=(12, 6))
+            fig, ax = plt.subplots(figsize=(12, 6))
+            fig.patch.set_alpha(0)
+            ax.patch.set_alpha(0)
             # bars should have this color: #d52c24
-            sns.countplot(data=df_cars, x='year', color='#d52c24')
-            plt.xlabel('Baujahr', fontsize=14)
-            plt.ylabel('Anzahl Fahrzeuge', fontsize=14)
-            plt.xticks(fontsize=11)
-            plt.yticks(fontsize=11)
-            st.pyplot(plt)
+            sns.countplot(data=df_cars, x='year', color='#d52c24', ax=ax)
+            ax.set_xlabel('Baujahr', fontsize=14, color='#666666')
+            ax.set_ylabel('Anzahl Fahrzeuge', fontsize=14, color='#666666')
+            ax.tick_params(axis='both', labelsize=11, colors='#666666')
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#666666')
+            st.pyplot(fig)
 
             # Fahrzeuganzahl nach Monaten
             st.subheader("Fahrzeuganzahl nach Monaten")
@@ -249,14 +252,17 @@ def main():
             df_monthly.index = df_monthly.index.to_timestamp()
 
             # Plot
-            plt.figure(figsize=(12,6))
-            sns.lineplot(x=df_monthly.index, y=df_monthly.values, marker='o', color='#d52c24')
-            plt.xlabel("Monat", fontsize=14)
-            plt.ylabel("Anzahl Fahrzeuge", fontsize=14)
-            plt.xticks(fontsize=11)
-            plt.yticks(fontsize=11)
-            plt.grid(True)
-            st.pyplot(plt)
+            fig, ax = plt.subplots(figsize=(12,6))
+            fig.patch.set_alpha(0)
+            ax.patch.set_alpha(0)
+            sns.lineplot(x=df_monthly.index, y=df_monthly.values, marker='o', color='#d52c24', ax=ax)
+            ax.set_xlabel("Monat", fontsize=14, color='#666666')
+            ax.set_ylabel("Anzahl Fahrzeuge", fontsize=14, color='#666666')
+            ax.tick_params(axis='both', labelsize=11, colors='#666666')
+            ax.grid(True, alpha=0.3, color='#666666')
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#666666')
+            st.pyplot(fig)
 
             # Fahrzeuganzahl nach Stunden
             st.subheader("Fahrzeuganzahl nach Stunden")
@@ -268,13 +274,16 @@ def main():
             df_hourly = df_cars.groupby('hour').size()
 
             # Plot as bar chart
-            plt.figure(figsize=(12,6))
-            sns.barplot(x=df_hourly.index, y=df_hourly.values, color='#d52c24')
-            plt.xlabel("Stunde des Tages", fontsize=14)
-            plt.ylabel("Anzahl Fahrzeuge", fontsize=14)
-            plt.xticks(fontsize=11)
-            plt.yticks(fontsize=11)
-            st.pyplot(plt)
+            fig, ax = plt.subplots(figsize=(12,6))
+            fig.patch.set_alpha(0)
+            ax.patch.set_alpha(0)
+            sns.barplot(x=df_hourly.index, y=df_hourly.values, color='#d52c24', ax=ax)
+            ax.set_xlabel("Stunde des Tages", fontsize=14, color='#666666')
+            ax.set_ylabel("Anzahl Fahrzeuge", fontsize=14, color='#666666')
+            ax.tick_params(axis='both', labelsize=11, colors='#666666')
+            for spine in ax.spines.values():
+                spine.set_edgecolor('#666666')
+            st.pyplot(fig)
 
         else:
             st.warning("No items found in the MongoDB collection.")
